@@ -42,6 +42,7 @@ import android.widget.TextView;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -104,6 +105,7 @@ public abstract class TokenCompleteTextView<T> extends MultiAutoCompleteTextView
     private boolean allowCollapse = true;
 
     private int tokenLimit = -1;
+    private int minimumTokensVisible = 2;
 
     /**
      * Add the TextChangedListeners
@@ -383,6 +385,11 @@ public abstract class TokenCompleteTextView<T> extends MultiAutoCompleteTextView
     @SuppressWarnings("unused")
     public void setTokenLimit(int tokenLimit) {
         this.tokenLimit = tokenLimit;
+    }
+
+    @SuppressWarnings("unused")
+    public void setMinimumTokensVisible(int minimumTokensVisible) {
+        this.minimumTokensVisible = minimumTokensVisible;
     }
 
     /**
@@ -1019,6 +1026,23 @@ public abstract class TokenCompleteTextView<T> extends MultiAutoCompleteTextView
         if (allowCollapse && !isFocused()) {
             updateCountSpan();
         }
+
+        if (objects.size() - hiddenSpans.size() < this.minimumTokensVisible){
+
+            int toShow = objects.size() - hiddenSpans.size();
+            Iterator<TokenImageSpan> hiddenSpanIterator = hiddenSpans.iterator();
+
+            while (toShow > 0 && hiddenSpanIterator.hasNext()){
+
+                TokenImageSpan hiddenSpan = hiddenSpanIterator.next();
+
+                objects.remove(hiddenSpan.getToken());
+                insertSpan(hiddenSpan);
+                hiddenSpanIterator.remove();
+                updateCountSpan();
+                toShow--;
+            }
+        }
     }
 
     /**
@@ -1035,7 +1059,7 @@ public abstract class TokenCompleteTextView<T> extends MultiAutoCompleteTextView
         if (editable == null) return;
 
         // If we're focused, or haven't hidden any objects yet, we can try adding it
-        if (!allowCollapse || isFocused() || hiddenSpans.isEmpty()) {
+        if (!allowCollapse || isFocused() || hiddenSpans.isEmpty() || objects.size() - hiddenSpans.size() < this.minimumTokensVisible) {
             int offset = editable.length();
             //There might be a hint visible...
             if (hintVisible) {
@@ -1240,6 +1264,8 @@ public abstract class TokenCompleteTextView<T> extends MultiAutoCompleteTextView
                 TokenImageSpan token = (TokenImageSpan) what;
                 objects.add(token.getToken());
 
+                Log.e("TAG", "Are we calling on span added?");
+
                 if (listener != null)
                     listener.onTokenAdded(token.getToken());
             }
@@ -1253,6 +1279,8 @@ public abstract class TokenCompleteTextView<T> extends MultiAutoCompleteTextView
                 if (objects.contains(token.getToken())) {
                     objects.remove(token.getToken());
                 }
+
+                Log.e("TAG", "Are we calling on span removed");
 
                 if (listener != null)
                     listener.onTokenRemoved(token.getToken());
