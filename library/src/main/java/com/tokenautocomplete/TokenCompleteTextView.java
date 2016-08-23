@@ -1264,8 +1264,6 @@ public abstract class TokenCompleteTextView<T> extends MultiAutoCompleteTextView
                 TokenImageSpan token = (TokenImageSpan) what;
                 objects.add(token.getToken());
 
-                Log.e("TAG", "Are we calling on span added?");
-
                 if (listener != null)
                     listener.onTokenAdded(token.getToken());
             }
@@ -1279,8 +1277,6 @@ public abstract class TokenCompleteTextView<T> extends MultiAutoCompleteTextView
                 if (objects.contains(token.getToken())) {
                     objects.remove(token.getToken());
                 }
-
-                Log.e("TAG", "Are we calling on span removed");
 
                 if (listener != null)
                     listener.onTokenRemoved(token.getToken());
